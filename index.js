@@ -6,7 +6,13 @@ const messagesRoute = require("./routes/messagesRoute");
 const app = express();
 const socket = require("socket.io");
 require("dotenv").config();
-app.use(cors());
+
+const corsOptions = {
+  origin: process.env.REACT_APP_FRONTEND_URL, // Allow only your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+  credentials: true, // Allow cookies to be sent
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/auth", userRoutes);
 app.use("/api/messages", messagesRoute);
