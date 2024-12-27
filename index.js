@@ -11,7 +11,7 @@ app.use(express.json());
 app.use("/api/auth", userRoutes);
 app.use("/api/messages", messagesRoute);
 mongoose
-  .connect(process.env.MONGO_URL, {
+  .connect(process.env.REACT_APP_MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -27,7 +27,8 @@ const server = app.listen(process.env.PORT, () => {
 
 const io = socket(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.REACT_APP_FRONTEND_URL,
+    // "http://localhost:3000",
     credentials: true,
   },
 });
