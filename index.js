@@ -3,8 +3,11 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const messagesRoute = require("./routes/messagesRoute");
+const { createServer } = require("http");
 const socket = require("socket.io");
 const app = express();
+const server = createServer(app); // Create an HTTP server
+
 require("dotenv").config();
 
 const corsOptions = {
@@ -26,17 +29,11 @@ mongoose
     console.log("DB Connection Sucessfull");
   })
   .catch((err) => {
-    console.log(err.message);
+    console.error(err.message);
   });
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server Started on Port ${process.env.PORT}`);
-});
 
 const io = socket(server, {
-  cors: {
-    origin: process.env.REACT_APP_FRONTEND_URL,
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 global.onlineUsers = new Map();
@@ -49,7 +46,19 @@ io.on("connection", (socket) => {
   socket.on("send-msg", (data) => {
     const sendUserSocket = onlineUsers.get(data.to);
     if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-receive", data.message);
+      socket.to(sendUserSocket).emit("msg-receive", data.msg);
     }
   });
+  socket.on("disconnect", () => {
+    for (const [key, value] of onlineUsers.entries()) {
+      if (value === socket.id) {
+        onlineUsers.delete(key);
+        break;
+      }
+    }
+  });
+});
+
+server.listen(process.env.PORT, () => {
+  console.log(`Server Started on Port ${process.env.PORT}`);
 });
